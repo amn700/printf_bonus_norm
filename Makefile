@@ -1,8 +1,8 @@
 CC = cc
-# CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror
 
-SRCS = ft_printf.c helper_functions.c helper_functions2.c parse_flags.c
-SRCS_BONUS = ft_printf.c helper_functions.c helper_functions2.c parse_flags.c
+SRCS = ft_printf.c helper_functions.c helper_functions2.c parse_flags.c handlers.c
+SRCS_BONUS = ft_printf.c helper_functions.c helper_functions2.c parse_flags.c handlers.c
 
 OBJS = $(SRCS:.c=.o)
 OBJS_BONUS = $(SRCS_BONUS:.c=.o)
@@ -17,7 +17,7 @@ $(NAME): $(OBJS)
 bonus: $(OBJS_BONUS)
 	ar rcs $(NAME) $(OBJS_BONUS)
 
-%.o: %.c
+%.o: %.c ft_printf.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
