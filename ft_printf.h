@@ -15,4 +15,5 @@ typedef struct s_flags {
     int alt_form;
 }   t_flags;
 
+int ft_printf(const char *format, ...);
 #endif

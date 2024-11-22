@@ -1,16 +1,4 @@
-#include <stdarg.h>
-#include <unistd.h>
-#include <string.h>
-
-typedef struct s_flags {
-    int left_align;
-    int zero_pad;
-    int width;
-    int precision;
-    int plus_sign;
-    int space_sign;
-    int alt_form;
-}   t_flags;
+#include "ft_printf.h"
 
 int ft_putchar(char c)
 {
@@ -42,15 +30,14 @@ void ft_reverse_str(char *str, int len)
 
 int ft_number_len(unsigned long long n, int base)
 {
-    int len;
-
-    len = 0;
+    int len = 0;
+    if (n == 0) return 1;
     while (n)
     {
         n /= base;
         len++;
     }
-    return (len ? len : 1);
+    return len;
 }
 
 int ft_print_hex_prefix(t_flags *flags, char conv, int is_zero)
@@ -99,19 +86,15 @@ int ft_convert_and_print(unsigned long long n, int base, int is_signed,
     char    converted[64];
     char    *digits;
     int     len;
-    int     chars_written;
-    int     is_zero;
+    int     chars_written = 0;
+    int     is_zero = (n == 0);
 
     digits = "0123456789abcdef";
     len = 0;
-    chars_written = 0;
-    is_zero = (n == 0);
 
     // Convert to string
     if (is_zero)
-    {
         converted[len++] = '0';
-    }
     else
     {
         while (n)
@@ -124,50 +107,67 @@ int ft_convert_and_print(unsigned long long n, int base, int is_signed,
     // Uppercase for hex
     if (conv == 'X')
     {
-        int i = 0;
-        while (i < len)
-        {
+        for (int i = 0; i < len; i++)
             if (converted[i] >= 'a' && converted[i] <= 'f')
                 converted[i] = converted[i] - 'a' + 'A';
-            i++;
-        }
     }
 
     // Reverse the string
     ft_reverse_str(converted, len);
 
-    // Padding logic for width
-    int padding = 0;
-    if (flags->width > len + chars_written)
-        padding = flags->width - len - chars_written;
+    // Precision padding for numbers
+    int precision_padding = 0;
+    if (flags->precision > len)
+        precision_padding = flags->precision - len;
 
-    if (!flags->left_align && flags->zero_pad)
+    // Total padding calculation
+    int total_padding = 0;
+    int total_len = len + precision_padding;
+    
+    // Add space for prefix and sign
+    if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
+        total_len += 2;
+    if (is_signed && (is_negative || flags->plus_sign || flags->space_sign))
+        total_len++;
+
+    if (flags->width > total_len)
+        total_padding = flags->width - total_len;
+
+    // Handle right-aligned padding (without left alignment)
+    if (!flags->left_align && total_padding > 0)
     {
-        // Zero padding
-        while (padding--)
+        // Decide padding character (space or zero)
+        char pad_char = (flags->zero_pad && flags->precision == -1) ? '0' : ' ';
+        
+        while (total_padding--)
         {
-            ft_putchar('0');
+            ft_putchar(pad_char);
             chars_written++;
         }
     }
 
-    // Print prefix, sign, and number
-    chars_written += ft_print_hex_prefix(flags, conv, is_zero);
+    // Print sign and prefix
     chars_written += ft_print_sign(is_signed, is_negative, flags);
+    chars_written += ft_print_hex_prefix(flags, conv, is_zero);
 
-    // Print the number
-    int i = 0;
-    while (i < len)
+    // Precision padding for numbers
+    while (precision_padding--)
+    {
+        ft_putchar('0');
+        chars_written++;
+    }
+
+    // Print converted number
+    for (int i = 0; i < len; i++)
     {
         ft_putchar(converted[i]);
         chars_written++;
-        i++;
     }
 
-    // After printing, handle left alignment if needed
-    if (flags->left_align)
+    // Handle left-aligned padding
+    if (flags->left_align && total_padding > 0)
     {
-        while (padding--)
+        while (total_padding--)
         {
             ft_putchar(' ');
             chars_written++;
@@ -177,9 +177,8 @@ int ft_convert_and_print(unsigned long long n, int base, int is_signed,
     return (chars_written);
 }
 
-int ft_parse_flags(const char **format, t_flags *flags)
+void intialize_flags(t_flags *flags)
 {
-    // Reset flags
     flags->left_align = 0;
     flags->zero_pad = 0;
     flags->width = 0;
@@ -187,6 +186,34 @@ int ft_parse_flags(const char **format, t_flags *flags)
     flags->plus_sign = 0;
     flags->space_sign = 0;
     flags->alt_form = 0;
+}
+
+void parse_width(const char **format, t_flags *flags)
+{
+    while (**format >= '0' && **format <= '9')
+    {
+        flags->width = flags->width * 10 + (**format - '0');
+        (*format)++;
+    }
+}
+
+void parse_precision(const char **format, t_flags *flags)
+{
+    if (**format == '.')
+    {
+        (*format)++;
+        flags->precision = 0;
+        while (**format >= '0' && **format <= '9')
+        {
+            flags->precision = flags->precision * 10 + (**format - '0');
+            (*format)++;
+        }
+    }
+}
+
+int ft_parse_flags(const char **format, t_flags *flags)
+{
+    intialize_flags(flags);
 
     // Parse flag characters
     while (**format == '-' || **format == '0' || **format == '+' || 
@@ -204,25 +231,8 @@ int ft_parse_flags(const char **format, t_flags *flags)
             flags->alt_form = 1;
         (*format)++;
     }
-
-    // Parse width
-    while (**format >= '0' && **format <= '9')
-    {
-        flags->width = flags->width * 10 + (**format - '0');
-        (*format)++;
-    }
-
-    // Parse precision
-    if (**format == '.')
-    {
-        (*format)++;
-        flags->precision = 0;
-        while (**format >= '0' && **format <= '9')
-        {
-            flags->precision = flags->precision * 10 + (**format - '0');
-            (*format)++;
-        }
-    }
+    parse_width(format, flags);
+    parse_precision(format, flags);
 
     return (0);
 }
@@ -247,18 +257,29 @@ int ft_printf(const char *format, ...)
             if (*format == 'c')
             {
                 char c = (char)va_arg(args, int);
+                int width_padding = (flags.width > 1) ? flags.width - 1 : 0;
+
+                // Handle right-aligned padding (spaces before the character)
+                if (!flags.left_align && width_padding > 0) {
+                    while (width_padding--) {
+                        ft_putchar(' ');
+                        chars_written++;
+                    }
+                }
+
+                // Print the character
                 ft_putchar(c);
                 chars_written++;
-            }
-            // String conversion
-            else if (*format == 's')
-            {
-                char *s = va_arg(args, char*);
-                int len = 0;
-                while (s[len] && (flags.precision == -1 || len < flags.precision))
-                    len++;
-                ft_putstr(s, len);
-                chars_written += len;
+
+                // Handle left-aligned padding (spaces after the character)
+                if (flags.left_align && width_padding > 0)
+                {
+                    while (width_padding--)
+                    {
+                        ft_putchar(' ');
+                        chars_written++;
+                    }
+                }
             }
             // Integer conversions
             else if (*format == 'd' || *format == 'i')
@@ -286,11 +307,31 @@ int ft_printf(const char *format, ...)
                 chars_written += 2;
                 chars_written += ft_convert_and_print((unsigned long)ptr, 16, 0, 0, &flags, 'x');
             }
-            // Percent sign
             else if (*format == '%')
             {
+                int padding = flags.width > 1 ? flags.width - 1 : 0;
+                if (!flags.left_align)
+                    while (padding--) ft_putchar(' ');
                 ft_putchar('%');
-                chars_written++;
+                if (flags.left_align)
+                    while (padding--) ft_putchar(' ');
+                chars_written += (flags.width > 1) ? flags.width : 1;
+            }
+            // String conversion
+            else if (*format == 's')
+            {
+                char *str = va_arg(args, char *);
+                if (!str) str = "(null)";
+                int len = 0;
+                while (str[len] && (flags.precision == -1 || len < flags.precision))
+                    len++;
+                int padding = flags.width > len ? flags.width - len : 0;
+                if (!flags.left_align)
+                    while (padding--) ft_putchar(' ');
+                ft_putstr(str, len);
+                if (flags.left_align)
+                    while (padding--) ft_putchar(' ');
+                chars_written += (flags.width > len) ? flags.width : len;
             }
         }
         else
