@@ -16,106 +16,95 @@ int	ft_convert_number(unsigned long long n, int base, char *buffer, char conv)
 	return (len);
 }
 // Print signed numbers (handles d and i conversions)
-int	ft_print_signed_number(int n, t_flags *flags) {
-	char	buffer[64];
-	int		is_negative = (n < 0);
-	int		len;
-	int		chars_written = 0;
+int ft_print_number(unsigned long long n, int base, int is_signed, int is_negative, 
+                    t_flags *flags, char conv)
+{
+    char    buffer[64];
+    int     len;
+    int     chars_written = 0;
+    int     is_zero = (n == 0);
 
-	// Convert number to string (using absolute value)
-	len = ft_convert_number(is_negative ? -(long)n : n, 10, buffer, 'd');
+    // Convert number to string
+    len = ft_convert_number(n, base, buffer, conv);
 
-	// Adjust length for precision
-	int precision_padding = (flags->precision > len) ? flags->precision - len : 0;
-	int total_len = len + precision_padding;
+    // Handle precision 0 for zero value
+    if (is_zero && flags->precision == 0)
+        len = 0;
 
-	// Include space for sign (+, -, or ' ')
-	if (is_negative || flags->plus_sign || flags->space_sign)
-		total_len++;
+    // Calculate padding
+    int precision_padding = (flags->precision > len) ? flags->precision - len : 0;
+    
+    // Calculate total length including prefix/sign
+    int prefix_len = 0;
+    if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
+        prefix_len = 2;
+    if (is_signed && (is_negative || flags->plus_sign || flags->space_sign))
+        prefix_len = 1;
 
-	// Adjust for width
-	int width_padding = (flags->width > total_len) ? flags->width - total_len : 0;
+    int total_len = len + precision_padding + prefix_len;
+    int width_padding = (flags->width > total_len) ? flags->width - total_len : 0;
 
-	// Right-aligned padding (spaces)
-	if (!flags->left_align && width_padding > 0)
-		chars_written += ft_print_padding((flags->zero_pad && flags->precision == -1) ? '0' : ' ', width_padding);
+    // Right-aligned space padding
+    if (!flags->left_align && (!flags->zero_pad || flags->precision != -1))
+    {
+        while (width_padding-- > 0)
+        {
+            ft_putchar(' ');
+            chars_written++;
+        }
+    }
 
-	// Print sign
-	if (is_negative)
-		chars_written += ft_putchar('-');
-	else if (flags->plus_sign)
-		chars_written += ft_putchar('+');
-	else if (flags->space_sign)
-		chars_written += ft_putchar(' ');
+    // Print sign/prefix
+    if (is_signed)
+    {
+        if (is_negative)
+            chars_written += ft_putchar('-');
+        else if (flags->plus_sign)
+            chars_written += ft_putchar('+');
+        else if (flags->space_sign)
+            chars_written += ft_putchar(' ');
+    }
 
-	// Precision padding (zeros)
-	chars_written += ft_print_padding('0', precision_padding);
+    // Print hex prefix
+    if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
+    {
+        ft_putchar('0');
+        ft_putchar(conv);
+        chars_written += 2;
+    }
 
-	// Print number
-	chars_written += ft_putstr(buffer, len);
+    // Right-aligned zero padding
+    if (!flags->left_align && flags->zero_pad && flags->precision == -1)
+    {
+        while (width_padding-- > 0)
+        {
+            ft_putchar('0');
+            chars_written++;
+        }
+    }
 
-	// Left-aligned padding (spaces)
-	if (flags->left_align && width_padding > 0)
-		chars_written += ft_print_padding(' ', width_padding);
+    // Precision padding
+    while (precision_padding-- > 0)
+    {
+        ft_putchar('0');
+        chars_written++;
+    }
 
-	return (chars_written);
-}
+    // Print number (unless it's 0 with precision 0)
+    if (len > 0)
+        chars_written += ft_putstr(buffer, len);
 
-// Handler for d and i conversions
-void	signed_conversion(va_list args, t_flags *flags, int *chars_written) {
-	int n = va_arg(args, int);
-	*chars_written += ft_print_signed_number(n, flags);
-}
+    // Left-aligned padding
+    if (flags->left_align)
+    {
+        while (width_padding-- > 0)
+        {
+            ft_putchar(' ');
+            chars_written++;
+        }
+    }
 
-// Print numeric conversions (handles flags, padding, precision, etc.)
-int	ft_print_number(unsigned long long n, int base, int is_signed, int is_negative, t_flags *flags, char conv) {
-	char	buffer[64];
-	int		len = ft_convert_number(n, base, buffer, conv);
-	int		is_zero = (n == 0);
-	int		chars_written = 0;
-
-	// Adjust length for precision
-	int precision_padding = (flags->precision > len) ? flags->precision - len : 0;
-	int total_len = len + precision_padding;
-
-	// Add space for prefix and sign
-	if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
-		total_len += 2;
-	if (is_signed && (is_negative || flags->plus_sign || flags->space_sign))
-		total_len++;
-
-	// Adjust for width
-	int width_padding = (flags->width > total_len) ? flags->width - total_len : 0;
-
-	// Right-aligned padding
-	if (!flags->left_align && width_padding > 0)
-		chars_written += ft_print_padding((flags->zero_pad && flags->precision == -1) ? '0' : ' ', width_padding);
-
-	// Print sign
-	if (is_signed) {
-		if (is_negative)
-			chars_written += ft_putchar('-');
-		else if (flags->plus_sign)
-			chars_written += ft_putchar('+');
-		else if (flags->space_sign)
-			chars_written += ft_putchar(' ');
-	}
-
-	// Print prefix for hexadecimal
-	if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
-		chars_written += ft_putstr((conv == 'x') ? "0x" : "0X", 2);
-
-	// Precision padding
-	chars_written += ft_print_padding('0', precision_padding);
-
-	// Print number
-	chars_written += ft_putstr(buffer, len);
-
-	// Left-aligned padding
-	if (flags->left_align && width_padding > 0)
-		chars_written += ft_print_padding(' ', width_padding);
-
-	return (chars_written);
+    return (chars_written);
 }
 
 void	pointer_conversion(va_list args, t_flags *flags, int *chars_written)
@@ -127,25 +116,31 @@ void	pointer_conversion(va_list args, t_flags *flags, int *chars_written)
 	*chars_written += ft_print_number(ptr, 16, 0, 0, flags, 'x');
 }
 
-void	handle_conversion(va_list args, const char **format, t_flags *flags, int *chars_written)
+void handle_conversion(va_list args, const char **format, t_flags *flags, int *chars_written)
 {
-	char	specifier = **format;
-	int		n;
+    char    specifier = **format;
+    long    num;
 
-	if (specifier == 'c')
-		character_conversion(args, flags, chars_written);
-	else if (specifier == 's')
-		string_conversion(args, flags, chars_written);
-	else if (specifier == 'd' || specifier == 'i')
-		signed_conversion(args, flags, chars_written);
-	else if (specifier == 'u')
-		*chars_written += ft_print_number(va_arg(args, unsigned int), 10, 0, 0, flags, specifier);
-	else if (specifier == 'x' || specifier == 'X')
-		*chars_written += ft_print_number(va_arg(args, unsigned int), 16, 0, 0, flags, specifier);
-	else if (specifier == 'p')
-		pointer_conversion(args, flags, chars_written);
-	else if (specifier == '%')
-		*chars_written += ft_putchar('%');
+    if (specifier == 'd' || specifier == 'i')
+    {
+        num = va_arg(args, int);
+        if (num < 0)
+            *chars_written += ft_print_number(-(unsigned long long)num, 10, 1, 1, flags, specifier);
+        else
+            *chars_written += ft_print_number(num, 10, 1, 0, flags, specifier);
+    }
+    else if (specifier == 'u')
+        *chars_written += ft_print_number(va_arg(args, unsigned int), 10, 0, 0, flags, specifier);
+    else if (specifier == 'x' || specifier == 'X')
+        *chars_written += ft_print_number(va_arg(args, unsigned int), 16, 0, 0, flags, specifier);
+    else if (specifier == 'p')
+        pointer_conversion(args, flags, chars_written);
+    else if (specifier == 'c')
+        character_conversion(args, flags, chars_written);
+    else if (specifier == 's')
+        string_conversion(args, flags, chars_written);
+    else if (specifier == '%')
+        *chars_written += ft_putchar('%');
 }
 
 int	ft_printf(const char *format, ...)

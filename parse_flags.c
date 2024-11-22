@@ -6,7 +6,7 @@
 /*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 21:34:59 by mohchaib          #+#    #+#             */
-/*   Updated: 2024/11/22 21:36:14 by mohchaib         ###   ########.fr       */
+/*   Updated: 2024/11/22 22:28:38 by mohchaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,21 +49,27 @@ void	parse_precision(const char **format, t_flags *flags)
 void	parse_flags(const char **format, t_flags *flags)
 {
 	initialize_flags(flags);
-	while (**format == '-' || **format == '0' || **format == '+' 
-		|| **format == ' ' || **format == '#')
-	{
-		if (**format == '-')
-			flags->left_align = 1;
-		else if (**format == '0')
-			flags->zero_pad = 1;
-		else if (**format == '+')
-			flags->plus_sign = 1;
-		else if (**format == ' ')
-			flags->space_sign = 1;
-		else if (**format == '#')
-			flags->alt_form = 1;
-		(*format)++;
-	}
+	while (**format == '-' || **format == '0' || **format == '+' || 
+           **format == ' ' || **format == '#')
+    {
+        if (**format == '-')
+        {
+            flags->left_align = 1;
+            flags->zero_pad = 0;  // '-' overrides '0'
+        }
+        else if (**format == '0' && !flags->left_align)
+            flags->zero_pad = 1;
+        else if (**format == '+')
+        {
+            flags->plus_sign = 1;
+            flags->space_sign = 0;  // '+' overrides ' '
+        }
+        else if (**format == ' ' && !flags->plus_sign)
+            flags->space_sign = 1;
+        else if (**format == '#')
+            flags->alt_form = 1;
+        (*format)++;
+    }
 	parse_width(format, flags);
 	parse_precision(format, flags);
 }
