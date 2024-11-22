@@ -1,8 +1,8 @@
 CC = cc
 # CFLAGS = -Wall -Wextra -Werror
 
-SRCS = ft_printf.c
-SRCS_BONUS = ft_printf.c
+SRCS = ft_printf.c helper_functions.c helper_functions2.c parse_flags.c
+SRCS_BONUS = ft_printf.c helper_functions.c helper_functions2.c parse_flags.c
 
 OBJS = $(SRCS:.c=.o)
 OBJS_BONUS = $(SRCS_BONUS:.c=.o)
