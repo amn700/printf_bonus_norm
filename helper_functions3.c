@@ -1,96 +1,75 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   helper_functions3.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/25 14:58:06 by mohchaib          #+#    #+#             */
+/*   Updated: 2024/11/25 16:05:58 by mohchaib         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_printf.h"
 
-int	ft_print_number(unsigned long long n, int base, int is_signed,
-		int is_negative, t_flags *flags, char conv)
+void	part_one(t_norm *norm, t_flags *flags, char conv)
 {
-	char	buffer[10];
-	int		len;
-	int		chars_written;
-	int		is_zero;
-	int		precision_padding;
-	int		prefix_len;
-	int		total_len;
-	int		width_padding;
-
-	chars_written = 0;
-	is_zero = (n == 0);
-	len = ft_convert_number(n, base, buffer, conv);
-	if (is_zero && flags->precision == 0)
-		len = 0;
-	if (flags->precision > len)
-		precision_padding = flags->precision - len;
+	if (norm->is_zero && flags->precision == 0)
+		norm->len = 0;
+	if (flags->precision > norm->len)
+		norm->precision_padding = flags->precision - norm->len;
 	else
-		precision_padding = 0;
-	prefix_len = 0;
-	if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
-		prefix_len = 2;
-	if (is_signed && (is_negative || flags->plus_sign || flags->space_sign))
-		prefix_len = 1;
-	total_len = len + precision_padding + prefix_len;
-	if (flags->width > total_len)
-		width_padding = flags->width - total_len;
+		norm->precision_padding = 0;
+	norm->prefix_len = 0;
+	if (flags->alt_form && !norm->is_zero && (conv == 'x' || conv == 'X'))
+		norm->prefix_len = 2;
+	if (norm->is_signed && (norm->is_negative || flags->plus_sign
+			|| flags->space_sign))
+		norm->prefix_len = 1;
+	norm->total_len = norm->len + norm->precision_padding + norm->prefix_len;
+	if (flags->width > norm->total_len)
+		norm->width_padding = flags->width - norm->total_len;
 	else
-		width_padding = 0;
-	if (!flags->left_align && (!flags->zero_pad || flags->precision != -1))
-		while (width_padding-- > 0)
-			chars_written += ft_putchar(' ');
-	if (is_signed)
-	{
-		if (is_negative)
-			chars_written += ft_putchar('-');
-		else if (flags->plus_sign)
-			chars_written += ft_putchar('+');
-		else if (flags->space_sign)
-			chars_written += ft_putchar(' ');
-	}
-	if (flags->alt_form && !is_zero && (conv == 'x' || conv == 'X'))
-		chars_written += ft_putchar('0') + ft_putchar(conv);
-	if (!flags->left_align && flags->zero_pad && flags->precision == -1)
-		while (width_padding-- > 0)
-			chars_written += ft_putchar('0');
-	while (precision_padding-- > 0)
-		chars_written += ft_putchar('0');
-	if (len > 0)
-		chars_written += ft_putstr(buffer, len);
-	if (flags->left_align)
-		while (width_padding-- > 0)
-			chars_written += ft_putchar(' ');
-	return (chars_written);
+		norm->width_padding = 0;
 }
 
-void	pointer_conversion(va_list args, t_flags *flags, int *chars_written)
+void	part_two(t_norm *norm, t_flags *flags, char conv, int *chars_written)
 {
-	void	*ptr;
-	char	buffer[18];
-	int		len;
-	int		width_padding;
-	int		total_len;
-
-	ptr = va_arg(args, void *);
-	if (ptr == NULL)
+	if (!flags->left_align && (!flags->zero_pad || flags->precision != -1))
+		while (norm->width_padding-- > 0)
+			*chars_written += ft_putchar(' ');
+	if (norm->is_signed)
 	{
-		len = 3;
-		if (flags->width > len)
-			width_padding = flags->width - len;
-		else
-			width_padding = 0;
-		if (!flags->left_align)
-			*chars_written += ft_print_padding(' ', width_padding);
-		*chars_written += ft_putstr("0x0", len);
-		if (flags->left_align)
-			*chars_written += ft_print_padding(' ', width_padding);
-		return ;
+		if (norm->is_negative)
+			*chars_written += ft_putchar('-');
+		else if (flags->plus_sign)
+			*chars_written += ft_putchar('+');
+		else if (flags->space_sign)
+			*chars_written += ft_putchar(' ');
 	}
-	len = ft_convert_number((unsigned long)ptr, 16, buffer, 'x');
-	total_len = len + 2;
-	if (flags->width > total_len)
-		width_padding = flags->width - total_len;
-	else
-		width_padding = 0;
-	if (!flags->left_align)
-		*chars_written += ft_print_padding(' ', width_padding);
-	*chars_written += ft_putstr("0x", 2);
-	*chars_written += ft_putstr(buffer, len);
+	if (flags->alt_form && !norm->is_zero && (conv == 'x' || conv == 'X'))
+		*chars_written += ft_putchar('0') + ft_putchar(conv);
+	if (!flags->left_align && flags->zero_pad && flags->precision == -1)
+		while (norm->width_padding-- > 0)
+			*chars_written += ft_putchar('0');
+	while (norm->precision_padding-- > 0)
+		*chars_written += ft_putchar('0');
+}
+
+int	ft_print_number(unsigned long long n, t_norm *norm, t_flags *flags,
+		char conv)
+{
+	char	buffer[10];
+	int		chars_written;
+
+	chars_written = 0;
+	norm->len = ft_convert_number(n, norm->base, buffer, conv);
+	part_one(norm, flags, conv);
+	part_two(norm, flags, conv, &chars_written);
+	if (norm->len > 0)
+		chars_written += ft_putstr(buffer, norm->len);
 	if (flags->left_align)
-		*chars_written += ft_print_padding(' ', width_padding);
+		while (norm->width_padding-- > 0)
+			chars_written += ft_putchar(' ');
+	return (chars_written);
 }
