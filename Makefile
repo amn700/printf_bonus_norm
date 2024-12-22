@@ -1,4 +1,4 @@
-CC = cc
+./test.sh cCC = cc
 CFLAGS = -Wall -Wextra -Werror
 
 SRCS = ft_printf.c helper_functions0.c helper_functions1.c helper_functions2.c helper_functions3.c helper_functions4.c parse_flags.c conversion_handler.c
@@ -17,7 +17,7 @@ $(NAME): $(OBJS)
 bonus: $(OBJS_BONUS)
 	ar rcs $(NAME) $(OBJS_BONUS)
 
-%.o: %.c ft_printf.h
+%.o: %.c ft_printf.h ft_printf_bonus.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
