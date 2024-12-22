@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   helper_function2_bonus.c                           :+:      :+:    :+:   */
+/*   helper_functions2_bonus.c                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 10:33:10 by mohchaib          #+#    #+#             */
-/*   Updated: 2024/11/25 16:59:41 by mohchaib         ###   ########.fr       */
+/*   Updated: 2024/12/22 05:14:20 by mohchaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "ft_printf_bonus.h"
 
 void	init_struct(t_norm *norm)
 {

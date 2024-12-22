@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   helper_function1_bonus.c                           :+:      :+:    :+:   */
+/*   helper_functions1_bonus.c                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 20:06:39 by mohchaib          #+#    #+#             */
-/*   Updated: 2024/11/25 16:59:30 by mohchaib         ###   ########.fr       */
+/*   Updated: 2024/12/22 05:14:19 by mohchaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "ft_printf_bonus.h"
 
 int	ft_putchar(char c)
 {

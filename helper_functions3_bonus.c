@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   helper_function3_bonus.c                           :+:      :+:    :+:   */
+/*   helper_functions3_bonus.c                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 14:58:06 by mohchaib          #+#    #+#             */
-/*   Updated: 2024/11/25 16:59:50 by mohchaib         ###   ########.fr       */
+/*   Updated: 2024/12/22 05:14:22 by mohchaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "ft_printf_bonus.h"
 
 void	part_one(t_norm *norm, t_flags *flags, char conv)
 {

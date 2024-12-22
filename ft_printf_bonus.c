@@ -6,11 +6,11 @@
 /*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 16:58:08 by mohchaib          #+#    #+#             */
-/*   Updated: 2024/11/25 16:58:09 by mohchaib         ###   ########.fr       */
+/*   Updated: 2024/12/22 05:15:12 by mohchaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "ft_printf_bonus.h"
 
 int	ft_printf(const char *format, ...)
 {
@@ -20,8 +20,6 @@ int	ft_printf(const char *format, ...)
 
 	chars_written = 0;
 	va_start(args, format);
-	if (write(1, NULL, 0) == -1)
-		return (-1);
 	while (*format)
 	{
 		if (*format == '%')

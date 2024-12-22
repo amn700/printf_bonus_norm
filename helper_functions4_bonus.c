@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   helper_function4_bonus.c                           :+:      :+:    :+:   */
+/*   helper_functions4_bonus.c                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mohchaib <mohchaib@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 11:53:40 by mohchaib          #+#    #+#             */
-/*   Updated: 2024/11/25 17:00:03 by mohchaib         ###   ########.fr       */
+/*   Updated: 2024/12/22 05:14:25 by mohchaib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "ft_printf_bonus.h"
 
 void	handle_null_pointer(t_flags *flags, int *chars_written, t_norm2 *norm)
 {
